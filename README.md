@@ -1,4 +1,4 @@
-Privinet Dashboard
+# Privinet Dashboard
 
 ## Getting Started
 
