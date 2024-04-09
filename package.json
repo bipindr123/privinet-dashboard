@@ -11,6 +11,8 @@
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.6",
     "@googlemaps/markerclusterer": "^2.5.3",
+    "@react-google-maps/api": "^2.19.3",
+    "@types/google.maps": "^3.55.5",
     "@vis.gl/react-google-maps": "^0.8.2",
     "next": "14.1.4",
     "react": "^18",

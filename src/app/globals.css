@@ -37,3 +37,7 @@ h1 {
   @apply text-4xl font-bold text-center text-balance ;
   margin: 1rem;
 }
+
+p{
+  color: black;
+}
