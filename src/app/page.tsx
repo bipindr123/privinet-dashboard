@@ -1,99 +1,77 @@
 "use client";
 
-import Image from "next/image";
+import { APIProvider, Map, useMarkerRef } from "@vis.gl/react-google-maps";
 
-import {
-  APIProvider,
-  AdvancedMarker,
-  Map,
-  useMarkerRef,
-  InfoWindow,
-  useAdvancedMarkerRef
-} from "@vis.gl/react-google-maps";
+import { MarkerWithInfowindow } from "./mymarker";
 
-import {MarkerWithInfowindow} from "./mymarker";
-
-import { Loader } from "@googlemaps/js-api-loader";
-
-import { MarkerClusterer } from "@googlemaps/markerclusterer";
-import type { Marker } from "@googlemaps/markerclusterer";
 import { useEffect, useState, useRef } from "react";
 
-import DataPoints from "./sensors";
+// import DataPoints from "./sensors";
+
+const fetchDataPoints = async () => {
+  const response = await fetch("http://localhost:3005/allsensors");
+  const data = await response.json();
+  return data;
+};
+
+const laAirportLocation = { lat: 33.941, lng: -118.403 };
 
 const App = () => {
-  const [markerRef, marker] = useMarkerRef();
   const apiKey = process.env.NEXT_PUBLIC_APP_API_KEY || "";
   const MapId = process.env.NEXT_PUBLIC_APP_MAP_ID || "";
+  const [DataPoints, setDataPoints] = useState([]);
+
+  useEffect(() => {
+    fetchDataPoints().then((data) => {
+      setDataPoints(data);
+    });
+  }, []);
 
   return (
-    <APIProvider apiKey={apiKey}>
-      <Map
-        style={{ width: "100vw", height: "80vh" }}
-        defaultCenter={{ lat: 33.941, lng: -118.403 }}
-        defaultZoom={14}
-        // gestureHandling={"greedy"}
-        // disableDefaultUI={true}
-        mapId={MapId}
-      >
-        <Markers points={DataPoints} />
-        {/* <AdvancedMarker position={{ lat: 33.941, lng: -118.403 }}>
-        </AdvancedMarker> */}
-      </Map>
-    </APIProvider>
+    <div className="dashmap">
+      <APIProvider apiKey={apiKey}>
+        <Map
+          style={{ width: "97vw", height: "80vh", borderRadius: "10px" }}
+          defaultCenter={laAirportLocation}
+          defaultZoom={14}
+          // disableDefaultUI={true}
+          mapId={MapId}
+        >
+          <Markers points={DataPoints} />
+        </Map>
+      </APIProvider>
+    </div>
   );
 };
 
-type Point = google.maps.LatLngLiteral & { timestamp: number } & {
-  key: string;
-} & {name: string};
-
-type Props = { points: Point[] };
-
-const Markers = ({ points }: Props) => {
-  const [markerRef, marker] = useAdvancedMarkerRef();
-  const [infowindowShown, setInfowindowShown] = useState(false);
-
-  const toggleInfoWindow = () =>
-    setInfowindowShown(previousState => !previousState);
-
-  const closeInfoWindow = () => setInfowindowShown(false);
-
-  const setMarkerRefs = (marker: Marker) => {
-    markerRef(marker);
+export type Point = {
+  name: string;
+  _id: string;
+  locations: [
+    {
+      timestamp: number;
+      lat: number;
+      long: number;
+    }
+  ];
+  last_location: {
+    timestamp: number;
+    lat: number;
+    long: number;
   };
+};
 
+type Points = { points: Point[] };
+
+const Markers = ({ points }: Points) => {
   return (
     <>
       {points.map((point) => (
-        <MarkerWithInfowindow key={point.timestamp} data = {point}/>
+        <MarkerWithInfowindow key={point._id} data={point} />
       ))}
     </>
   );
 };
-
-function CustomMarker(props) {
-  const [time, setTime] = useState(Date.now());
-
-  useEffect(() => {
-    const timerId = setInterval(() => {
-      setTime(Date.now());
-    }, 1000);
-
-    return () => {
-      clearInterval(timerId);
-    };
-  }, []);
-
-  // set the amount of time before it point turns red
-  if (props.point_time < time - 1000 * 10) {
-    return <span style={{ fontSize: "0.8rem" }}>🔴</span>;
-  } else if (props.point_time < time - 1000 * 5) {
-    return <span style={{ fontSize: "0.8rem" }}>🟡</span>;
-  } else {
-    return <span style={{ fontSize: "0.8rem" }}>🟢</span>;
-  }
-}
 
 export default function Home() {
   return (

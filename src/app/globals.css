@@ -41,3 +41,10 @@ h1 {
 p{
   color: black;
 }
+
+.dashmap {
+  border: 2px solid rgb(255, 255, 255);
+  margin: 2vh;
+  padding: 1vh;
+  border-radius: 10px;
+}

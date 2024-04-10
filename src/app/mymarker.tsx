@@ -6,10 +6,11 @@ import {
 } from "@vis.gl/react-google-maps";
 import { text } from "stream/consumers";
 
+import { Point } from "./page";
+
 export const MarkerWithInfowindow = (props) => {
   const [infowindowOpen, setInfowindowOpen] = useState(false);
   const [markerRef, marker] = useAdvancedMarkerRef();
-  console.log(props.data);
 
   const [curtime, setTime] = useState(Date.now());
 
@@ -22,17 +23,20 @@ export const MarkerWithInfowindow = (props) => {
       clearInterval(timerId);
     };
   }, []);
-
   return (
     <>
       <AdvancedMarker
         ref={markerRef}
         onClick={() => setInfowindowOpen(true)}
-        position={{ lat: props.data.lat, lng: props.data.lng }}
+        position={{
+          lat: props.data.last_location.lat,
+          lng: props.data.last_location.long,
+        }}
         title={"Sensor information"}
       >
-        <CustomMarker data={props.data} curtime = {curtime}></CustomMarker>
+        <CustomMarker data={props.data} curtime={curtime}></CustomMarker>
       </AdvancedMarker>
+
       {infowindowOpen && (
         <InfoWindow
           anchor={marker}
@@ -41,7 +45,13 @@ export const MarkerWithInfowindow = (props) => {
         >
           <div>
             <p>Name: {props.data.name}</p>
-            <p>Last seen: {Math.round((curtime - props.data.timestamp)/1000) } Seconds ago</p>
+            <p>
+              Last seen:{" "}
+              {Math.round(
+                (curtime - props.data.last_location.timestamp) / 1000
+              )}{" "}
+              Seconds ago
+            </p>
           </div>
         </InfoWindow>
       )}
@@ -50,10 +60,8 @@ export const MarkerWithInfowindow = (props) => {
 };
 
 const CustomMarker = (props) => {
-
-
   // set the amount of time before it point turns red
-  if (props.data.timestamp < props.curtime - 1000 * 10) {
+  if (props.data.last_location.timestamp < props.curtime - 1000 * 10) {
     return <span style={{ fontSize: "0.8rem" }}>🔴</span>;
   } else if (props.data.timestamp < props.curtime - 1000 * 5) {
     return <span style={{ fontSize: "0.8rem" }}>🟡</span>;
