@@ -6,35 +6,88 @@ import {
 } from "@vis.gl/react-google-maps";
 import { text } from "stream/consumers";
 
-import { Point } from "./page";
+import { Point, rectangleBounds } from "./page";
 
-export const MarkerWithInfowindow = (props) => {
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+
+
+const isOutofBounds = (lat: number, long: number) => {
+  if (lat > rectangleBounds.north || lat < rectangleBounds.south) {
+    return true;
+  }
+  if (long > rectangleBounds.east || long < rectangleBounds.west) {
+    return true;
+  }
+  return false;
+};
+
+
+
+export const MarkerWithInfowindow = ({ point, curtime }) => {
   const [infowindowOpen, setInfowindowOpen] = useState(false);
   const [markerRef, marker] = useAdvancedMarkerRef();
+  const [isInsideBounds, setIsInsideBounds] = useState(true);
+  const [openAlert, setOpenAlert] = React.useState(false);
 
-  const [curtime, setTime] = useState(Date.now());
+  if (isOutofBounds(point.last_location.lat, point.last_location.long) && isInsideBounds) {
+    setIsInsideBounds(false);
+    setOpenAlert(true);
+  }
 
-  useEffect(() => {
-    const timerId = setInterval(() => {
-      setTime(Date.now());
-    }, 1000);
+  if (!isOutofBounds(point.last_location.lat, point.last_location.long) && !isInsideBounds) {
+    setIsInsideBounds(true);
+    console.log(isInsideBounds)
+    setOpenAlert(true);
+  }
 
-    return () => {
-      clearInterval(timerId);
-    };
-  }, []);
+  function formatTime() {
+    const lastSeen = Math.round(
+      (curtime - point.last_location.timestamp) / 1000
+    );
+    const minutes = Math.floor(lastSeen / 60);
+    const seconds = lastSeen % 60;
+    if (minutes === 0) {
+      return `${seconds} seconds ago`;
+    }
+    return `${minutes} minutes ${seconds} seconds ago`;
+  }
+
+  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenAlert(false);
+  };
+
   return (
     <>
+      <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleClose}>
+        <Alert
+          onClose={handleClose}
+          severity="warning"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {isInsideBounds ?   point.name + " is back in bounds" : point.name + " is out of bounds"}
+        </Alert>
+      </Snackbar>
+
       <AdvancedMarker
         ref={markerRef}
         onClick={() => setInfowindowOpen(true)}
         position={{
-          lat: props.data.last_location.lat,
-          lng: props.data.last_location.long,
+          lat: point.last_location.lat,
+          lng: point.last_location.long,
         }}
         title={"Sensor information"}
       >
-        <CustomMarker data={props.data} curtime={curtime}></CustomMarker>
+        <CustomMarker
+          point={point}
+          curtime={curtime}
+          isInsideBounds={isInsideBounds}
+        ></CustomMarker>
       </AdvancedMarker>
 
       {infowindowOpen && (
@@ -44,14 +97,8 @@ export const MarkerWithInfowindow = (props) => {
           onCloseClick={() => setInfowindowOpen(false)}
         >
           <div>
-            <p>Name: {props.data.name}</p>
-            <p>
-              Last seen:{" "}
-              {Math.round(
-                (curtime - props.data.last_location.timestamp) / 1000
-              )}{" "}
-              Seconds ago
-            </p>
+            <p>Name: {point.name}</p>
+            <p>Last seen: {formatTime()}</p>
           </div>
         </InfoWindow>
       )}
@@ -59,11 +106,20 @@ export const MarkerWithInfowindow = (props) => {
   );
 };
 
-const CustomMarker = (props) => {
+const CustomMarker = ({ point, curtime, isInsideBounds }) => {
   // set the amount of time before it point turns red
-  if (props.data.last_location.timestamp < props.curtime - 1000 * 10) {
+  if (isInsideBounds === false) {
+    return <span style={{ fontSize: "0.8rem" }}>❌</span>;
+  }
+
+  const lastSeen = Math.round(
+    (curtime - point.last_location.timestamp) / 1000
+  );
+  const seconds = lastSeen;
+
+  if (seconds > 10) {
     return <span style={{ fontSize: "0.8rem" }}>🔴</span>;
-  } else if (props.data.timestamp < props.curtime - 1000 * 5) {
+  } else if (seconds > 5) {
     return <span style={{ fontSize: "0.8rem" }}>🟡</span>;
   } else {
     return <span style={{ fontSize: "0.8rem" }}>🟢</span>;
