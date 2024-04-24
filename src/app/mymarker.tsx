@@ -6,11 +6,11 @@ import {
 } from "@vis.gl/react-google-maps";
 import { text } from "stream/consumers";
 
-import { Point, rectangleBounds } from "./page";
+import { Point, SomeContext, rectangleBounds } from "./page";
 
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import { useContext } from "react";
 
 const isOutofBounds = (lat: number, long: number) => {
   if (lat > rectangleBounds.north || lat < rectangleBounds.south) {
@@ -22,23 +22,29 @@ const isOutofBounds = (lat: number, long: number) => {
   return false;
 };
 
-
-
 export const MarkerWithInfowindow = ({ point, curtime }) => {
   const [infowindowOpen, setInfowindowOpen] = useState(false);
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [isInsideBounds, setIsInsideBounds] = useState(true);
   const [openAlert, setOpenAlert] = React.useState(false);
+  const { alerts, setAlerts } = useContext(SomeContext);
 
-  if (isOutofBounds(point.last_location.lat, point.last_location.long) && isInsideBounds) {
+  if (
+    isOutofBounds(point.last_location.lat, point.last_location.long) &&
+    isInsideBounds
+  ) {
     setIsInsideBounds(false);
-    setOpenAlert(true);
+    // setOpenAlert(true);
+
+    setAlerts([...alerts, point.name + " is out of bounds"]);
   }
 
-  if (!isOutofBounds(point.last_location.lat, point.last_location.long) && !isInsideBounds) {
+  if (
+    !isOutofBounds(point.last_location.lat, point.last_location.long) &&
+    !isInsideBounds
+  ) {
     setIsInsideBounds(true);
-    console.log(isInsideBounds)
-    setOpenAlert(true);
+    setAlerts([...alerts, point.name + " is inside of bounds"]);
   }
 
   function formatTime() {
@@ -46,15 +52,18 @@ export const MarkerWithInfowindow = ({ point, curtime }) => {
       (curtime - point.last_location.timestamp) / 1000
     );
     const minutes = Math.floor(lastSeen / 60);
+    const hours = Math.floor(minutes / 60);
     const seconds = lastSeen % 60;
-    if (minutes === 0) {
-      return `${seconds} seconds ago`;
-    }
-    return `${minutes} minutes ${seconds} seconds ago`;
+    if (hours > 0) return `${hours} hours ago`;
+    if (minutes > 0) return `${minutes} minutes ${seconds} seconds ago`;
+    return `${seconds} seconds ago`;
   }
 
-  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
+  const handleClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
       return;
     }
 
@@ -68,9 +77,11 @@ export const MarkerWithInfowindow = ({ point, curtime }) => {
           onClose={handleClose}
           severity="warning"
           variant="filled"
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
-          {isInsideBounds ?   point.name + " is back in bounds" : point.name + " is out of bounds"}
+          {isInsideBounds
+            ? point.name + " is back in bounds"
+            : point.name + " is out of bounds"}
         </Alert>
       </Snackbar>
 
@@ -112,9 +123,7 @@ const CustomMarker = ({ point, curtime, isInsideBounds }) => {
     return <span style={{ fontSize: "0.8rem" }}>❌</span>;
   }
 
-  const lastSeen = Math.round(
-    (curtime - point.last_location.timestamp) / 1000
-  );
+  const lastSeen = Math.round((curtime - point.last_location.timestamp) / 1000);
   const seconds = lastSeen;
 
   if (seconds > 10) {
