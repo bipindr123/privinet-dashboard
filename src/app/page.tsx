@@ -58,7 +58,6 @@ const App = () => {
 
     const timerId = setInterval(() => {
       setTime(Date.now());
-      console.log(alerts);
     }, 1000);
 
     return () => {
