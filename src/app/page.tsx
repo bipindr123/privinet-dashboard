@@ -37,7 +37,7 @@ interface AlertProps {
   alerts: string[];
   setAlerts: (alert: any) => void;
 }
-export const SomeContext = createContext<AlertProps>({
+export const alertsContext = createContext<AlertProps>({
   alerts: [],
   setAlerts: () => {},
 });
@@ -48,6 +48,16 @@ const App = () => {
   const [DataPoints, setDataPoints] = useState([]);
   const [curtime, setTime] = useState(Date.now());
   const [alerts, setAlerts] = useState([]);
+
+  const [counter, setCounter] = useState(0);
+
+  const incrementCounter = () => {
+    setCounter(counter + 1);
+  };
+
+  const decrementCounter = () => {
+    setCounter(counter - 1);
+  };
 
   useEffect(() => {
     const fetchtimerId = setInterval(() => {
@@ -67,42 +77,47 @@ const App = () => {
   }, []);
 
   return (
-    <SomeContext.Provider value={{ alerts, setAlerts }}>
-      <Box sx={{ flexGrow: 1 }}>
-        <Grid container spacing={2}>
-          <Grid xs={3}>
-            <Settings />
+    <>
+      <button onClick={()  => incrementCounter()}></button>
+      <button onClick={decrementCounter}></button>
+
+      <alertsContext.Provider value={{ alerts, setAlerts }}>
+        <Box sx={{ flexGrow: 1 }}>
+          <Grid container spacing={1}>
+            <Grid xs={12} md={4}>
+              <Settings />
+            </Grid>
+            <Grid xs={12} md={8}>
+              <div className="dashmap">
+                <APIProvider apiKey={apiKey}>
+                  <Map
+                    style={{
+                      width: "auto",
+                      height: "80vh",
+                      borderRadius: "10px",
+                    }}
+                    defaultCenter={laAirportLocation}
+                    defaultZoom={14}
+                    // disableDefaultUI={true}
+                    mapId={MapId}
+                  >
+                    <Markers points={DataPoints} curtime={curtime} />
+                    <Rectangle
+                      bounds={rectangleBounds}
+                      strokeColor={"#0c4cb3"}
+                      strokeOpacity={1}
+                      strokeWeight={3}
+                      fillColor={"#3b82f6"}
+                      fillOpacity={0.2}
+                    />
+                  </Map>
+                </APIProvider>
+              </div>
+            </Grid>
           </Grid>
-          <Grid xs={9}>
-            <div className="dashmap">
-              <APIProvider apiKey={apiKey}>
-                <Map
-                  style={{
-                    width: "auto",
-                    height: "80vh",
-                    borderRadius: "10px",
-                  }}
-                  defaultCenter={laAirportLocation}
-                  defaultZoom={14}
-                  // disableDefaultUI={true}
-                  mapId={MapId}
-                >
-                  <Markers points={DataPoints} curtime={curtime} />
-                  <Rectangle
-                    bounds={rectangleBounds}
-                    strokeColor={"#0c4cb3"}
-                    strokeOpacity={1}
-                    strokeWeight={3}
-                    fillColor={"#3b82f6"}
-                    fillOpacity={0.2}
-                  />
-                </Map>
-              </APIProvider>
-            </div>
-          </Grid>
-        </Grid>
-      </Box>
-    </SomeContext.Provider>
+        </Box>
+      </alertsContext.Provider>
+    </>
   );
 };
 

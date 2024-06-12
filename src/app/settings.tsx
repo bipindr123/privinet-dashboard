@@ -3,11 +3,11 @@ import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
 import Stack from "@mui/material/Stack";
 
-import { SomeContext } from "./page";
+import { alertsContext } from "./page";
 import { useContext } from "react";
 
 export const Settings = () => {
-  const { alerts, setAlerts } = useContext(SomeContext);
+  const { alerts, setAlerts } = useContext(alertsContext);
   return (
     <>
       <h1>Alerts</h1>

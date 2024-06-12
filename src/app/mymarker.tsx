@@ -6,7 +6,7 @@ import {
 } from "@vis.gl/react-google-maps";
 import { text } from "stream/consumers";
 
-import { Point, SomeContext, rectangleBounds } from "./page";
+import { Point, alertsContext, rectangleBounds } from "./page";
 
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -27,7 +27,7 @@ export const MarkerWithInfowindow = ({ point, curtime }) => {
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [isInsideBounds, setIsInsideBounds] = useState(true);
   const [openAlert, setOpenAlert] = React.useState(false);
-  const { alerts, setAlerts } = useContext(SomeContext);
+  const { alerts, setAlerts } = useContext(alertsContext);
 
   if (
     isOutofBounds(point.last_location.lat, point.last_location.long) &&
