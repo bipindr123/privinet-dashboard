@@ -29,6 +29,8 @@ export const MarkerWithInfowindow = ({ point, curtime }) => {
   const [openAlert, setOpenAlert] = React.useState(false);
   const { alerts, setAlerts } = useContext(alertsContext);
 
+  console.log(point);
+
   if (
     isOutofBounds(point.last_location.lat, point.last_location.long) &&
     isInsideBounds

@@ -51,14 +51,6 @@ const App = () => {
 
   const [counter, setCounter] = useState(0);
 
-  const incrementCounter = () => {
-    setCounter(counter + 1);
-  };
-
-  const decrementCounter = () => {
-    setCounter(counter - 1);
-  };
-
   useEffect(() => {
     const fetchtimerId = setInterval(() => {
       fetchDataPoints().then((data) => {
@@ -76,10 +68,18 @@ const App = () => {
     };
   }, []);
 
+  const [count, setCount] = useState(0);
+
+  const changeTarget = (e) =>
+    {
+
+    }
+
+
   return (
     <>
-      <button onClick={()  => incrementCounter()}></button>
-      <button onClick={decrementCounter}></button>
+
+    <button onClick={(e)=>changeTarget(e)}></button>
 
       <alertsContext.Provider value={{ alerts, setAlerts }}>
         <Box sx={{ flexGrow: 1 }}>

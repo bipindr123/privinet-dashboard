@@ -9,7 +9,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 
-const endpoints = ["endpoint 1", "endpoint 2", "endpoint 3"];
+const endpoints = ["North Gate", "South Gate", "West Gate", "East Gate"];
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -22,13 +22,16 @@ const darkTheme = createTheme({
 });
 
 const StreamedImageComponent = () => {
-  const [data, setData] = useState({});
+  const [data, setData] = useState(null);
+
+  console.log(data == null);
 
   const fetchImages = async () => {
-    const response = await fetch("http://localhost:8000/stream-images");
+    const response = await fetch("http://localhost:8000/stream-video");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+
     
     const boundary = response.headers.get("Content-Type").split("boundary=")[1];
     const reader = response.body.getReader();
@@ -40,6 +43,7 @@ const StreamedImageComponent = () => {
     async function processChunks() {
       const { done, value } = await reader.read();
       if (done) return;
+      console.log(value);
 
       buffer += decoder.decode(value, { stream: true });
 
@@ -93,6 +97,8 @@ const StreamedImageComponent = () => {
 
   return (
     <div>
+    {!data && (<img src="https://miro.medium.com/v2/resize:fit:1400/1*e_Loq49BI4WmN7o9ItTADg.gif" width={"100%"} alt="Loading" />)}
+
       {data && data.metadata && data.imageSrc && (
         <div>
           <img src={data.imageSrc} alt="Streamed Image" />
@@ -144,7 +150,7 @@ const ImageStream = () => {
             </Grid>
             <Grid xs={12} md={8}>
               <Box sx={{ minWidth: 120, padding: 2 }}>
-                <h1>Streamed images</h1>
+                <h1>STREAM</h1>
                 <StreamedImageComponent />
               </Box>
             </Grid>
