@@ -101,7 +101,7 @@ const StreamedImageComponent = () => {
 
 
   useEffect(() => {
-    // fetchImages();
+    fetchImages();
     return () => {
       setCancel_stream(true);
       console.log("Unmounting");
